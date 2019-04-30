@@ -10,7 +10,7 @@ runOpt_params;
     [setupFile,folderPath] = uigetfile('setup*.m','Select a setupFile.m');
     [~,setupFile,ext] = fileparts(setupFile);
     if(~strcmp(folderPath(1:end-1), pwd))
-        copyfile([folderPath setupFile ext],'./');
+        copyfile([folderPath setupFile ext],'.\');
     end
     if(strfind(setupFile,'EZSiPh'))
         setupFile='setup_EZSiPh';
@@ -18,7 +18,7 @@ runOpt_params;
     [baseFile,folderPath] = uigetfile('base*.fsp','Select a baseFile.fsp');
     [~,baseFile,ext] = fileparts(baseFile);
     if(~strcmp(folderPath(1:end-1), pwd))
-        copyfile([folderPath baseFile '*'],'./');
+        copyfile([folderPath baseFile '*'],'.\');
     end
 % else
 %     setupFile = varargin{1};
@@ -27,7 +27,7 @@ runOpt_params;
 %         error('setupFile must have extension .m');
 %     end
 %     if(~isempty(folderPath) && ~strcmp(folderPath, pwd))
-%         copyfile([folderPath '/' setupFile ext],'./');
+%         copyfile([folderPath '\' setupFile ext],'.\');
 %     end
 %     baseFile = varargin{2};
 %     [folderPath,baseFile,ext] = fileparts(baseFile);
@@ -35,25 +35,25 @@ runOpt_params;
 %         error('baseFile must have extension .fsp');
 %     end
 %     if(~isempty(folderPath) && ~strcmp(folderPath, pwd))
-%         copyfile([folderPath '/' baseFile ext],'./');
+%         copyfile([folderPath '\' baseFile ext],'.\');
 %     end
 % end
 
 % Initialize optimization
-addpath('./examples');
-addpath('./InverseDesignMethods');
-addpath('./GeometryMethods');
-addpath('./GeometryMethods/FreeFormMethods');
-addpath('./GeometryMethods/LevelSetMethods');
-addpath('./LumericalMethods');
-addpath('./MeritFunctionMethods');
+% addpath('.\examples');
+% addpath('.\InverseDesignMethods');
+% addpath('.\GeometryMethods');
+% addpath('.\GeometryMethods\FreeFormMethods');
+% addpath('.\GeometryMethods\LevelSetMethods');
+% addpath('.\LumericalMethods');
+% addpath('.\MeritFunctionMethods');
 
 %multiWaitbar('Close all');
 fprintf(['Setup (' setupFile ')...\n']); %multiWaitbar(['Setup (' setupFile ')'],'Busy');
 
 eval(setupFile);
 save('SetupBaseLum.mat','baseFile','queueName','velocityMon','indexMon','userSim','shapeType','merits','-v7.3');
-runLumericalScript(lumerical, 'SetupBaseLum.mat', 'LumericalMethods/SetupBaseLum.lsf');
+runLumericalScript(lumerical, 'SetupBaseLum.mat', 'LumericalMethods\SetupBaseLum.lsf');
 load('SetupBaseLum.mat','sim3d','xMon', 'xMonLength', 'yMon', 'yMonLength', 'zMon', 'zMonLength');
 Init;
 numMon = opt.mf.numMonitors; monNames = opt.mf.monNames;
@@ -69,7 +69,7 @@ while(notFinished)
     iter = opt.iter;
     simFlag = opt.simFlag;
     notFinished = opt.notFinished;
-    %multiWaitbar('Iteration','Value',iter/opt.numIter);
+    %multiWaitbar('Iteration','Value',iter\opt.numIter);
     
     % Save data (optional)
     data = opt.data;
@@ -81,7 +81,7 @@ while(notFinished)
     
     % Run Lumerical simulation
     if(notFinished && (simFlag==1))
-        fprintf('\nIteration %g of %g\n',iter,opt.numIter); %multiWaitbar('Iteration','Value',iter/opt.numIter);
+        fprintf('\nIteration %g of %g\n',iter,opt.numIter); %multiWaitbar('Iteration','Value',iter\opt.numIter);
         %multiWaitbar('Export Geometry','Reset');
         %multiWaitbar(['Forward Simulation (' queueName ')'],'Reset');
         %multiWaitbar(['Adjoint Simulation (' queueName ')'],'Reset');
@@ -91,7 +91,7 @@ while(notFinished)
         geoData = opt.exportGeometry;
         save('AddGeometry.mat','geoData','-v7.3');
         clear geoData;
-        runLumericalScript(lumerical, 'AddGeometry.mat', 'LumericalMethods/AddGeometry.lsf');
+        runLumericalScript(lumerical, 'AddGeometry.mat', 'LumericalMethods\AddGeometry.lsf');
         %multiWaitbar('Export Geometry','Reset');
         %multiWaitbar('Export Geometry','Value',1);
         
@@ -111,7 +111,7 @@ while(notFinished)
                 freqInd = opt.forwardSolves{1,j,k}.freqInd;
                 numFreq = length(freqVec);
                 save('runForwardSolves.mat','first','iter','j','k','freqVec','runUserSim','freqInd','numFreq','-v7.3');
-                runLumericalScript(lumerical, 'runForwardSolves.mat', 'LumericalMethods/runForwardSolves.lsf');
+                runLumericalScript(lumerical, 'runForwardSolves.mat', 'LumericalMethods\runForwardSolves.lsf');
                 pause(5);load('runForwardSolves.mat');
                 opt = opt.updateMeritData(merit_E,merit_H,merit_pos,merit_eps,merit_eps_pos,normParam,freqInd,k);
                 opt = opt.updateGeoData(EField,pos_E,epsReal,pos_eps,1,freqInd,k,0);
@@ -142,7 +142,7 @@ while(notFinished)
                     numFreq = length(freqVec);
                     if(runSim)
                         save('runAdjointSolves.mat','first','iter','i','j','k','approxFreq','dipolePos','freqInd','freqVec','monInd','runUserSim','numFreq','currWeights','currDipoles','-v7.3');
-                        runLumericalScript(lumerical, 'runAdjointSolves.mat', 'LumericalMethods/runAdjointSolves.lsf');
+                        runLumericalScript(lumerical, 'runAdjointSolves.mat', 'LumericalMethods\runAdjointSolves.lsf');
                         pause(5);load('runAdjointSolves.mat');
                         if(sourceCnt>0)
                             opt = opt.updateGeoData(EField,pos_E,epsReal,pos_eps,i,freqInd,k,1);
